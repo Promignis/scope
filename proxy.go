@@ -26,7 +26,7 @@ func proxyHandler(w http.ResponseWriter, r *http.Request) {
 		req, err := http.NewRequest(r.Method, url, nil)
 		req.Header = r.Header
 
-		var toRead io.Reader
+		var toRead io.ReadCloser
 		resp, err := client.Do(req)
 		checkErr(err)
 
@@ -37,6 +37,8 @@ func proxyHandler(w http.ResponseWriter, r *http.Request) {
 		} else {
 			toRead = resp.Body
 		}
+
+		defer toRead.Close()
 
 		byteBody, err := ioutil.ReadAll(toRead)
 		checkErr(err)
