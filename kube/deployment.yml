@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: scope
+  namespace: scope
+  labels:
+    app: scope
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: scope
+  template:
+    metadata:
+      labels:
+        app: scope
+    spec:
+      containers:
+        - image: sahebjot94/scope:v1
+          name: scope
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80
+              protocol: TCP

@@ -24,15 +24,25 @@ func proxyHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
 
 		req, err := http.NewRequest(r.Method, url, nil)
+		if err != nil {
+			writeError(w, "Could not create request")
+			return
+		}
 		req.Header = r.Header
 
 		var toRead io.ReadCloser
 		resp, err := client.Do(req)
-		checkErr(err)
+		if err != nil {
+			writeError(w, "Could not make request to client")
+			return
+		}
 
 		if resp.Header.Get("Content-Encoding") == "gzip" {
 			gzipReader, err := gzip.NewReader(resp.Body)
-			checkErr(err)
+			if err != nil {
+				writeError(w, "Coult not create gzip reader")
+				return
+			}
 			toRead = gzipReader
 		} else {
 			toRead = resp.Body
@@ -47,10 +57,13 @@ func proxyHandler(w http.ResponseWriter, r *http.Request) {
 
 		fmt.Fprintf(w, string(byteBody))
 	} else {
-		// write this better
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, genError("POST not yet supported"))
+		writeError(w, "POST not yet supported")
 	}
+}
+
+func writeError(w http.ResponseWriter, errStr string) {
+	w.WriteHeader(http.StatusInternalServerError)
+	fmt.Fprintf(w, genError(errStr))
 }
 
 func main() {
